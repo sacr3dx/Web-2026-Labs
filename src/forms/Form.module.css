@@ -70,8 +70,8 @@
 }
 
 .form button:disabled {
-  background: #9ca3af;  
-  color: #e5e7eb;      
+  background: #9ca3af;
+  color: #e5e7eb;
   cursor: not-allowed;
   opacity: 0.6;
 }
