@@ -1,24 +1,49 @@
 {
   "notes": [
     {
-      "title": "123",
-      "description": "12qqeqwe",
-      "createdAt": "2026-10-08T20:40:55.589Z",
-      "hidden": true,
-      "tags": [
-        "qweqwe"
-      ],
-      "id": "otkC3X7V8pU"
+      "title": "Привет раннее",
+      "description": "",
+      "createdAt": "2026-10-09T21:00:51.399Z",
+      "hidden": false,
+      "tags": [],
+      "id": "ptoaOZ9sF9E"
     },
     {
-      "title": "Привет",
+      "title": "Привет с тегом",
       "description": "",
-      "createdAt": "2026-10-09T10:10:30.738Z",
+      "createdAt": "2026-10-09T21:01:02.564Z",
       "hidden": false,
       "tags": [
-        "ле ле"
+        "привет"
       ],
-      "id": "MCp4TjZGR3c"
+      "id": "4mlmpXwGNug"
+    },
+    {
+      "title": "Привет с тегом и хайден",
+      "description": "",
+      "createdAt": "2026-10-09T21:01:25.565Z",
+      "hidden": true,
+      "tags": [
+        "привет",
+        "зло"
+      ],
+      "id": "CBicK9y-IlY"
+    },
+    {
+      "title": "Привет с описанием",
+      "description": "Привет меня зовут Ярослав и сегодня 10.10 у меня день рождения!",
+      "createdAt": "2026-10-09T21:03:42.781Z",
+      "hidden": false,
+      "tags": [],
+      "id": "t5KcjdRIIP8"
+    },
+    {
+      "title": "Привет подзнее",
+      "description": "",
+      "createdAt": "2026-10-09T21:03:59.866Z",
+      "hidden": false,
+      "tags": [],
+      "id": "7o8-TzugD5g"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

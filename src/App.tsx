@@ -12,9 +12,7 @@ function App() {
   const [allTags, setAllTags] = useState<string[]>([])
   const [tagFilter, setTagFilter] = useState<string[]>([])
 
-  const [filters, setFilters] = useState<NoteFilters>({
-    sort: (params) => { params.set("_sort", "-createdAt")}
-  })
+  const [filters, setFilters] = useState<NoteFilters>({})
 
   useEffect(() => {
     loadNotes()
@@ -130,13 +128,19 @@ function App() {
 
       <h1>Your notes:</h1>
 
-      {filterNotes(notes).map((note) => (
-        <NoteCard
-          key={note.id}
-          note={note}
-          onDelete={() => handleDelete([note.id])}   // ← массив из одного id
-        />
-      ))}
+      {notes.length === 0 ? (
+        <p>You have no notes yet</p>
+      ) : filterNotes(notes).length === 0 ? (
+        <p>No notes match the selected filters</p>
+      ) : (
+        filterNotes(notes).map((note) => (
+          <NoteCard
+            key={note.id}
+            note={note}
+            onDelete={() => handleDelete([note.id])}
+          />
+        ))
+      )}
     </div>
   )
 }

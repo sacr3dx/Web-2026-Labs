@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import styles from "./Form.module.css"
 
 interface Props{
@@ -25,20 +25,38 @@ export default function NoteFilterForm({onFilterChange, onTagsChange, tags}: Pro
     }
 
     const [tagsShow, setTagsShow] = useState<string[]>([])
+    const selectedTags = tagsShow.filter((tag) => tags.includes(tag))
+
+    useEffect(() => {
+        if (selectedTags.length !== tagsShow.length) {
+            onTagsChange(selectedTags)
+        }
+    }, [tags])
+
     const handleTagToggle = (
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
-    const tag = e.target.value
-    const checked = e.target.checked
+        const tag = e.target.value
+        const checked = e.target.checked
 
-    const next = checked
-        ? [...tagsShow, tag]
-        : tagsShow.filter((t) => t !== tag)
+        const next = checked
+            ? [...selectedTags, tag]
+            : selectedTags.filter((t) => t !== tag)
 
-    setTagsShow(next)
+        setTagsShow(next)
+        onTagsChange(next)
+    }
 
-    onTagsChange(next)
-}
+    const[sort, setSort] = useState("-createdAt")
+    const handleSortChange = (
+        e: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        const value = e.target.value
+        setSort(value)
+        onFilterChange("sort", (params) => {
+            params.set("_sort", value)
+        })
+    }
 
     const[showHidden, setShowHidden] = useState(true)
     const handleShowHiddenChange = (
@@ -66,22 +84,47 @@ export default function NoteFilterForm({onFilterChange, onTagsChange, tags}: Pro
                 onChange={handleSearchChange}
             />
             </div>
+            <div className={styles.field}>
+                <p className={styles.label}>Tag filter</p>
 
-            <div>
-            <p>Tag filter</p>
-            {tags.map((tag) => (
-                <label key={tag}>
-                <input
-                    type="checkbox"
-                    value={tag}
-                    checked={tagsShow.includes(tag)}
-                    onChange={handleTagToggle}
-                />
-                {tag}
-                </label>
-            ))}
+                <div className={styles.tags}>
+                    {tags.length === 0 ? (
+                        <p>Tags not found</p>
+                    ) : (
+                        tags.map((tag) => {
+                        const active = selectedTags.includes(tag)
+                        return (
+                            <label
+                            key={tag}
+                            className={`${styles.tag} ${active ? styles.tagActive : ''}`}
+                            >
+                            <input
+                                type="checkbox"
+                                value={tag}
+                                checked={active}
+                                onChange={handleTagToggle}
+                            />
+                            {tag}
+                            </label>
+                        )
+                        })
+                    )}
+                    </div>
             </div>
-
+            <div className={styles.field}>
+                <label className={styles.label} htmlFor="sort-select">
+                    Date filter
+                </label>
+                <select
+                    id="sort-select"
+                    className={styles.select}
+                    value={sort}
+                    onChange={handleSortChange}
+                >
+                    <option value="-createdAt">Newest first</option>
+                    <option value="createdAt">Oldest first</option>
+                </select>
+                </div>
             <div>
             <label>
                 <input
