@@ -3,9 +3,10 @@ import styles from "./NoteCard.module.css"
 
 interface Props {
   note: Note
+  onDelete: () => void
 }
 
-export default function NoteCard({ note }: Props) {
+export default function NoteCard({ note, onDelete }: Props) {
   return (
     <div className={styles.container}>
       <h2 className={styles.noMargin}>{note.title}</h2>
@@ -21,6 +22,13 @@ export default function NoteCard({ note }: Props) {
         </p>
       </div>
       <p className={styles.noMargin}>{note.description}</p>
+      <button
+        type="button"
+        className={styles.deleteButton}
+        onClick={onDelete}
+      >
+        Delete
+      </button>
     </div>
   )
 }

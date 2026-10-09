@@ -22,3 +22,8 @@ export type CreateNoteFormValues = {
   hidden: boolean
   tags: string
 }
+
+export type NoteFilters = Record<
+  string,
+  (params: URLSearchParams) => void
+>

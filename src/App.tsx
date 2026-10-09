@@ -1,20 +1,33 @@
 import CreateNodeForm from "./forms/CreateNoteForm"
+import NoteFilterForm from "./forms/NoteFilterForm"
 import NoteCard from "./note/NoteCard"
-import type { Note, NoteDTO } from "./application/types"
+import type { Note, NoteDTO, NoteFilters } from "./application/types"
 import { useEffect, useState } from "react"
 import { mapNoteFromDTO } from "./application/utils"
-import DeleteNotes from "./forms/DeleteNote"
 
 function App() {
   const [notes, setNotes] = useState<Note[]>([])
   const [error, setError] = useState<string | null>(null)
+  
+  const [allTags, setAllTags] = useState<string[]>([])
+  const [tagFilter, setTagFilter] = useState<string[]>([])
+
+  const [filters, setFilters] = useState<NoteFilters>({
+    sort: (params) => { params.set("_sort", "-createdAt")}
+  })
 
   useEffect(() => {
     loadNotes()
-  }, [])
+  }, [filters])
 
   const loadNotes = async () => {
-    fetch("http://localhost:3000/notes")
+    const params = new URLSearchParams
+    Object.values(filters).forEach((foo) => foo(params))
+    const query = params.toString()
+      ? `?${params.toString()}`
+      : ""
+
+    fetch(`http://localhost:3000/notes${query}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Server responded ${res.status}`)
@@ -32,6 +45,13 @@ function App() {
           "Database is sleep... Try this: 'npm run db'"
         )
       })
+
+      fetch("http://localhost:3000/notes")
+      .then((res) => res.json())
+      .then((data: NoteDTO[]) => {
+        setAllTags(Array.from(new Set(data.flatMap((note) => note.tags))))
+      })
+      .catch((err) => console.error(err))
   }
 
   const handleSubmit = (note: Omit<Note, "id">) => {
@@ -50,7 +70,8 @@ function App() {
         }
       })
       .then((note: NoteDTO) => {
-        setNotes([...notes, mapNoteFromDTO(note)])
+        loadNotes()
+        setNotes([mapNoteFromDTO(note), ...notes])
         setError(null)
       })
       .catch((err) => {
@@ -76,11 +97,24 @@ function App() {
       setError(`Не удалось удалить ${failed.length}`)
       return
     }
+    loadNotes()
     setNotes((prev) =>
       prev.filter((n) => !ids.includes(n.id))
     )
     setError(null)
   }
+
+  const filterNotes = (notes: Note[]): Note[] =>
+    tagFilter.length
+      ? notes.filter((note) => note.tags.some((tag) => tagFilter.includes(tag)))
+      : notes
+
+  const handleFilterChange = (
+    filter: string,
+    foo: (params: URLSearchParams) => void
+  ) => {
+    setFilters((prev) => ({ ...prev, [filter]: foo}))
+  } 
 
   return (
     <div>
@@ -91,12 +125,17 @@ function App() {
         disabled={!!error}
       />
 
-      <DeleteNotes notes={notes} onDelete={handleDelete} />
+      <NoteFilterForm
+        onFilterChange={handleFilterChange} onTagsChange={setTagFilter} tags={allTags}/>
 
       <h1>Your notes:</h1>
 
-      {notes.map((note) => (
-        <NoteCard key={note.id} note={note} />
+      {filterNotes(notes).map((note) => (
+        <NoteCard
+          key={note.id}
+          note={note}
+          onDelete={() => handleDelete([note.id])}   // ← массив из одного id
+        />
       ))}
     </div>
   )

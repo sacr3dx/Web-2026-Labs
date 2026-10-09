@@ -1,14 +1,24 @@
 {
   "notes": [
     {
-      "id": "miEfvFa8j8k",
-      "title": "Даник",
-      "description": "Филип",
-      "createdAt": "2026-10-06T07:17:23.962Z",
+      "title": "123",
+      "description": "12qqeqwe",
+      "createdAt": "2026-10-08T20:40:55.589Z",
       "hidden": true,
       "tags": [
-        "бисексуал"
-      ]
+        "qweqwe"
+      ],
+      "id": "otkC3X7V8pU"
+    },
+    {
+      "title": "Привет",
+      "description": "",
+      "createdAt": "2026-10-09T10:10:30.738Z",
+      "hidden": false,
+      "tags": [
+        "ле ле"
+      ],
+      "id": "MCp4TjZGR3c"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
