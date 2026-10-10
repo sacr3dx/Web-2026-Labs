@@ -1,26 +1,41 @@
 {
   "notes": [
     {
-      "id": "Tk24RJuOYTQ",
-      "title": "Myfirst",
-      "description": "Hwlelo shmello vello ",
-      "createdAt": "2026-09-24T12:32:46.490Z",
-      "hidden": true,
-      "tags": [
-        "bbbb",
-        "sasss",
-        "ojsfojf"
-      ]
+      "title": "Привет раннее",
+      "description": "",
+      "createdAt": "2026-10-09T21:00:51.399Z",
+      "hidden": false,
+      "tags": [],
+      "id": "ptoaOZ9sF9E"
     },
     {
-      "id": "4lswxHnnRUY",
-      "title": "JBDajbdjbsad",
-      "description": "dlknasdnsakld",
-      "createdAt": "2026-09-24T13:15:52.472Z",
+      "title": "Привет с тегом",
+      "description": "",
+      "createdAt": "2026-10-09T21:01:02.564Z",
       "hidden": false,
       "tags": [
-        "alnkasdknsad"
-      ]
+        "привет"
+      ],
+      "id": "4mlmpXwGNug"
+    },
+    {
+      "title": "Привет с тегом и хайден",
+      "description": "",
+      "createdAt": "2026-10-09T21:01:25.565Z",
+      "hidden": true,
+      "tags": [
+        "привет",
+        "зло"
+      ],
+      "id": "CBicK9y-IlY"
+    },
+    {
+      "title": "Привет с описанием",
+      "description": "Привет меня зовут Ярослав и сегодня 10.10 у меня день рождения!",
+      "createdAt": "2026-10-09T21:03:42.781Z",
+      "hidden": false,
+      "tags": [],
+      "id": "t5KcjdRIIP8"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
