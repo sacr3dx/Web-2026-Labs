@@ -118,29 +118,35 @@ function App() {
     <div>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <CreateNodeForm
-        onSubmit={handleSubmit}
-        disabled={!!error}
-      />
-
-      <NoteFilterForm
-        onFilterChange={handleFilterChange} onTagsChange={setTagFilter} tags={allTags}/>
-
-      <h1>Your notes:</h1>
-
-      {notes.length === 0 ? (
-        <p>You have no notes yet</p>
-      ) : filterNotes(notes).length === 0 ? (
-        <p>No notes match the selected filters</p>
-      ) : (
-        filterNotes(notes).map((note) => (
-          <NoteCard
-            key={note.id}
-            note={note}
-            onDelete={() => handleDelete([note.id])}
+      <div className="layout">
+        <div className="main">
+          <CreateNodeForm
+            onSubmit={handleSubmit}
+            disabled={!!error}
           />
-        ))
-      )}
+
+          <h1>Your notes:</h1>
+
+          {notes.length === 0 ? (
+            <p>You have no notes yet</p>
+          ) : filterNotes(notes).length === 0 ? (
+            <p>No notes match the selected filters</p>
+          ) : (
+            filterNotes(notes).map((note) => (
+              <NoteCard
+                key={note.id}
+                note={note}
+                onDelete={() => handleDelete([note.id])}
+              />
+            ))
+          )}
+        </div>
+
+        <div className="sidebar">
+          <NoteFilterForm
+            onFilterChange={handleFilterChange} onTagsChange={setTagFilter} tags={allTags}/>
+        </div>
+      </div>
     </div>
   )
 }
