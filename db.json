@@ -1,4 +1,26 @@
 {
+  "users": [
+    {
+      "id": "xx1",
+      "email": "admin@mail.com",
+      "password": "admin"
+    },
+    {
+      "email": "git@gmail.com",
+      "password": "1111",
+      "id": "kRfXqLfB5q0"
+    },
+    {
+      "email": "hatenkoa@gmail.com",
+      "password": "10102007",
+      "id": "3m-YEGNLWGk"
+    },
+    {
+      "email": "test123@mail.com",
+      "password": "test123",
+      "id": "1UjtxUu11Nk"
+    }
+  ],
   "notes": [
     {
       "title": "Привет раннее",
@@ -6,36 +28,89 @@
       "createdAt": "2026-10-09T21:00:51.399Z",
       "hidden": false,
       "tags": [],
-      "id": "ptoaOZ9sF9E"
+      "id": "ptoaOZ9sF9E",
+      "author_id": "xx1"
     },
     {
       "title": "Привет с тегом",
       "description": "",
       "createdAt": "2026-10-09T21:01:02.564Z",
       "hidden": false,
-      "tags": [
-        "привет"
-      ],
-      "id": "4mlmpXwGNug"
+      "tags": ["привет"],
+      "id": "4mlmpXwGNug",
+      "author_id": "xx2"
     },
     {
-      "title": "Привет с тегом и хайден",
-      "description": "",
-      "createdAt": "2026-10-09T21:01:25.565Z",
+      "author_id": "xx1",
+      "title": "asidbaskld",
+      "description": "asdasd",
+      "createdAt": "2026-10-23T14:16:25.757Z",
       "hidden": true,
-      "tags": [
-        "привет",
-        "зло"
-      ],
-      "id": "CBicK9y-IlY"
+      "tags": ["asdd"],
+      "id": "V0ckjmY0C08"
     },
     {
-      "title": "Привет с описанием",
-      "description": "Привет меня зовут Ярослав и сегодня 10.10 у меня день рождения!",
-      "createdAt": "2026-10-09T21:03:42.781Z",
+      "author_id": "xx1",
+      "title": "asdsakdn",
+      "description": "asdsad",
+      "createdAt": "2026-10-23T14:16:29.973Z",
+      "hidden": false,
+      "tags": ["sads"],
+      "id": "guZz9S9yeD0"
+    },
+    {
+      "author_id": "xx1",
+      "title": "Note no",
+      "description": "",
+      "createdAt": "2026-10-23T19:20:47.382Z",
+      "hidden": true,
+      "tags": ["git"],
+      "id": "Y3m60_EfHZE"
+    },
+    {
+      "author_id": "xx1",
+      "title": "ghbdtn",
+      "description": "",
+      "createdAt": "2026-10-23T20:40:47.412Z",
       "hidden": false,
       "tags": [],
-      "id": "t5KcjdRIIP8"
+      "id": "AxkGaYb6E8Q"
+    },
+    {
+      "author_id": "kRfXqLfB5q0",
+      "title": "note",
+      "description": "not note",
+      "createdAt": "2026-10-23T21:21:17.439Z",
+      "hidden": true,
+      "tags": [],
+      "id": "ORoReJtxPR8"
+    },
+    {
+      "author_id": "3m-YEGNLWGk",
+      "title": "asdsd",
+      "description": "asd",
+      "createdAt": "2026-10-23T21:56:32.476Z",
+      "hidden": false,
+      "tags": [],
+      "id": "Fusm4-z9hjE"
+    },
+    {
+      "author_id": "3m-YEGNLWGk",
+      "title": "sads",
+      "description": "saddsa",
+      "createdAt": "2026-10-23T21:57:23.091Z",
+      "hidden": false,
+      "tags": ["sadsad"],
+      "id": "lrKNDufQEZ4"
+    },
+    {
+      "author_id": "3m-YEGNLWGk",
+      "title": "123",
+      "description": "",
+      "createdAt": "2026-10-23T21:57:35.992Z",
+      "hidden": false,
+      "tags": ["123"],
+      "id": "ugOuaiFk8SA"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
