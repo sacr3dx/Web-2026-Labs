@@ -36,7 +36,9 @@
       "description": "",
       "createdAt": "2026-10-09T21:01:02.564Z",
       "hidden": false,
-      "tags": ["привет"],
+      "tags": [
+        "привет"
+      ],
       "id": "4mlmpXwGNug",
       "author_id": "xx2"
     },
@@ -46,7 +48,9 @@
       "description": "asdasd",
       "createdAt": "2026-10-23T14:16:25.757Z",
       "hidden": true,
-      "tags": ["asdd"],
+      "tags": [
+        "asdd"
+      ],
       "id": "V0ckjmY0C08"
     },
     {
@@ -55,7 +59,9 @@
       "description": "asdsad",
       "createdAt": "2026-10-23T14:16:29.973Z",
       "hidden": false,
-      "tags": ["sads"],
+      "tags": [
+        "sads"
+      ],
       "id": "guZz9S9yeD0"
     },
     {
@@ -64,7 +70,9 @@
       "description": "",
       "createdAt": "2026-10-23T19:20:47.382Z",
       "hidden": true,
-      "tags": ["git"],
+      "tags": [
+        "git"
+      ],
       "id": "Y3m60_EfHZE"
     },
     {
@@ -96,11 +104,11 @@
     },
     {
       "author_id": "3m-YEGNLWGk",
-      "title": "sads",
-      "description": "saddsa",
+      "title": "sa",
+      "description": "sa",
       "createdAt": "2026-10-23T21:57:23.091Z",
-      "hidden": false,
-      "tags": ["sadsad"],
+      "hidden": true,
+      "tags": [],
       "id": "lrKNDufQEZ4"
     },
     {
@@ -109,8 +117,19 @@
       "description": "",
       "createdAt": "2026-10-23T21:57:35.992Z",
       "hidden": false,
-      "tags": ["123"],
+      "tags": [
+        "123"
+      ],
       "id": "ugOuaiFk8SA"
+    },
+    {
+      "author_id": "3m-YEGNLWGk",
+      "title": "Привет",
+      "description": "как дела",
+      "createdAt": "2026-10-24T07:09:17.877Z",
+      "hidden": true,
+      "tags": [],
+      "id": "5MHfDOrMKw4"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

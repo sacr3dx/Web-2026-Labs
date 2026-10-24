@@ -44,7 +44,7 @@ export default function LoginPage() {
           className="flex flex-col gap-4"
         >
           <input
-            type="text"
+            type="email"
             placeholder="Email"
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
             {...register("email", { required: true })}

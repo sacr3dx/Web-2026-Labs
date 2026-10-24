@@ -35,18 +35,16 @@ export default function NoteFilterForm({
   const [showHidden, setShowHidden] = useState(false)
 
   useEffect(() => {
-    if (selectedTags.length !== tagsShow.length) {
-      onTagsChange(selectedTags)
-    }
-  }, [tags])
-
-  useEffect(() => {
     onFilterChange("showHidden", (params) => {
       if (!showHidden) {
         params.set("hidden", "false")
       }
     })
-  }, [showHidden])
+
+    if (selectedTags.length !== tagsShow.length) {
+      onTagsChange(selectedTags)
+    }
+  }, [showHidden, tags])
 
   const handleTagToggle = (
     e: React.ChangeEvent<HTMLInputElement>
