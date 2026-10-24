@@ -24,7 +24,7 @@ export default function ShowNotePage() {
       .catch((err) => {
         console.error(err)
         setError(
-          "Database is sleep... Try this: 'npm run db'"
+          "Note is not find or database is sleep... Try this: 'npm run db'"
         )
       })
   }, [id])
