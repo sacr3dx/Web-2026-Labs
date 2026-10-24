@@ -1,5 +1,6 @@
-import { createBrowserRouter, Link } from "react-router"
+import { createBrowserRouter } from "react-router"
 import { RouterProvider } from "react-router/dom"
+import HomePage from "./auth_pages/HomePage"
 import LoginPage from "./auth_pages/LoginPage"
 import RegistrationPage from "./auth_pages/RegistrationPage"
 import NotesPages from "./note_pages/NotePages"
@@ -12,12 +13,7 @@ import EditCardPage from "./note_pages/EditCardPage"
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <div>
-        <div>Home page</div>
-        <Link to="/login">Login</Link>
-      </div>
-    ),
+    element: <HomePage />,
   },
   {
     path: "/login",
