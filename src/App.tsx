@@ -3,6 +3,7 @@ import { RouterProvider } from "react-router/dom"
 import HomePage from "./auth_pages/HomePage"
 import LoginPage from "./auth_pages/LoginPage"
 import RegistrationPage from "./auth_pages/RegistrationPage"
+import ErrorPage from "./auth_pages/ErrorPage"
 import NotesPages from "./note_pages/NotePages"
 import { AuthProvider } from "./hooks/useAuthContext"
 import Layout from "./auth_pages/Layout"
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
         element: <EditCardPage />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <ErrorPage />,
   },
 ])
 
