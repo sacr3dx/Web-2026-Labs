@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useNavigate, useParams } from "react-router"
 import type {
-  NoteDTO,
+  Note,
   CreateNoteFormValues,
 } from "../application/types"
 import { mapNoteFromDTO } from "../application/utils"
@@ -9,6 +9,12 @@ import {
   useForm,
   type SubmitHandler,
 } from "react-hook-form"
+import { useMutation, useQuery } from "@tanstack/react-query"
+
+type EditNotePayload = Pick<
+  Note,
+  "title" | "description" | "hidden" | "tags"
+>
 
 export default function EditCardPage() {
   const { id = "" } = useParams()
@@ -28,24 +34,48 @@ export default function EditCardPage() {
     },
   })
 
+  const {
+    data: note,
+    isLoading,
+    error: loadError,
+  } = useQuery<Note>({
+    queryKey: ["note", id],
+    queryFn: () =>
+      fetch(`http://localhost:3000/notes/${id}`)
+        .then((res) => res.json())
+        .then(mapNoteFromDTO),
+    staleTime: 1000 * 60 * 5,
+  })
+
   useEffect(() => {
-    fetch(`http://localhost:3000/notes/${id}`)
-      .then((res) => res.json())
-      .then((data: NoteDTO) => {
-        const note = mapNoteFromDTO(data)
-        reset({
-          title: note.title,
-          description: note.description,
-          hidden: note.hidden,
-          tags: note.tags.join(", "),
-        })
-      })
-  }, [id, reset])
+    if (!note) return
+    reset({
+      title: note.title,
+      description: note.description,
+      hidden: note.hidden,
+      tags: note.tags.join(", "),
+    })
+  }, [note, reset])
+
+  const { mutate: saveNote, error: saveError } =
+    useMutation({
+      mutationFn: (note: EditNotePayload) =>
+        fetch(`http://localhost:3000/notes/${id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(note),
+        }),
+      onSuccess: () => {
+        navigate(`/notes/${id}`)
+      },
+    })
 
   const handleFormSubmit: SubmitHandler<
     CreateNoteFormValues
   > = (data) => {
-    const note = {
+    saveNote({
       title: data.title.trim(),
       description: data.description.trim(),
       hidden: data.hidden,
@@ -53,17 +83,19 @@ export default function EditCardPage() {
         .split(",")
         .map((tag) => tag.trim())
         .filter((tag) => !!tag),
-    }
-
-    fetch(`http://localhost:3000/notes/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(note),
-    }).then(() => {
-      navigate(`/notes/${id}`)
     })
+  }
+
+  if (loadError) {
+    return (
+      <p className="text-red-500">
+        {loadError.message}
+      </p>
+    )
+  }
+
+  if (isLoading) {
+    return <p className="text-gray-500">Loading...</p>
   }
 
   return (
@@ -76,6 +108,10 @@ export default function EditCardPage() {
           Edit note
         </p>
       </div>
+
+      {saveError && (
+        <p className="text-red-500">{saveError.message}</p>
+      )}
 
       <div className="flex flex-col gap-1">
         <input
