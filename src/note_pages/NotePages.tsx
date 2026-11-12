@@ -9,6 +9,7 @@ import { useEffect, useState } from "react"
 import { mapNoteFromDTO } from "../application/utils"
 import { useAuthContext } from "../hooks/useAuthContext"
 import { Link } from "react-router"
+import { useMutation } from "@tanstack/react-query"
 
 export default function NotesPages() {
   const { user } = useAuthContext()
@@ -59,32 +60,37 @@ export default function NotesPages() {
       })
   }
 
-  const handleDelete = async (
-    ids: string[]
-  ): Promise<void> => {
-    const results = await Promise.all(
-      ids.map((id) =>
-        fetch(`http://localhost:3000/notes/${id}`, {
-          method: "DELETE",
-        })
-      )
-    )
-    const failed = results.filter((r) => !r.ok)
-    if (failed.length > 0) {
-      setError(`Не удалось удалить ${failed.length}`)
-      return
-    }
-    const remainingNotes = notes.filter(
-      (n) => !ids.includes(n.id)
-    )
-    setNotes(remainingNotes)
-    setAllTags(
-      Array.from(
-        new Set(remainingNotes.flatMap((note) => note.tags))
-      )
-    )
-    setError(null)
-  }
+  const { mutate: deleteNotes, error: deleteError } =
+    useMutation({
+      mutationFn: async (ids: string[]) => {
+        const results = await Promise.all(
+          ids.map((id) =>
+            fetch(`http://localhost:3000/notes/${id}`, {
+              method: "DELETE",
+            })
+          )
+        )
+        const failed = results.filter((r) => !r.ok)
+        if (failed.length > 0) {
+          throw new Error(
+            `Delete error ${failed.length}`
+          )
+        }
+      },
+      onSuccess: (_data, ids) => {
+        const remainingNotes = notes.filter(
+          (n) => !ids.includes(n.id)
+        )
+        setNotes(remainingNotes)
+        setAllTags(
+          Array.from(
+            new Set(
+              remainingNotes.flatMap((note) => note.tags)
+            )
+          )
+        )
+      },
+    })
 
   const filterNotes = (notes: Note[]): Note[] =>
     tagFilter.length
@@ -104,6 +110,11 @@ export default function NotesPages() {
     <div className="min-h-screen bg-[#fafafa] text-[#1a1a1a] font-sans antialiased p-6">
       <div className="max-w-240 mx-auto">
         {error && <p className="text-red-500">{error}</p>}
+        {deleteError && (
+          <p className="text-red-500">
+            {deleteError.message}
+          </p>
+        )}
 
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-semibold m-0">
@@ -133,7 +144,7 @@ export default function NotesPages() {
                   <NoteCard
                     key={note.id}
                     note={note}
-                    onDelete={() => handleDelete([note.id])}
+                    onDelete={() => deleteNotes([note.id])}
                   />
                 ))}
               </div>
