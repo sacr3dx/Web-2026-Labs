@@ -14,7 +14,7 @@ export default function Layout() {
         <div className="max-w-240 mx-auto flex items-center justify-between px-6 py-4 font-sans antialiased">
           <div>
             <Link
-              to="/"
+              to="/notes"
               className="text-xl font-semibold text-[#1a1a1a] hover:text-blue-600 transition-colors"
             >
               Notes
