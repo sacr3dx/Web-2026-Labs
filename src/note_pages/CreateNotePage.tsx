@@ -8,6 +8,7 @@ import {
   useForm,
   type SubmitHandler,
 } from "react-hook-form"
+import { useMutation } from "@tanstack/react-query"
 
 export default function CreateNotePage() {
   const { user } = useAuthContext()
@@ -27,10 +28,25 @@ export default function CreateNotePage() {
     },
   })
 
+  const { mutate: createNote, error } = useMutation({
+    mutationFn: (note: Omit<Note, "id">) =>
+      fetch("http://localhost:3000/notes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(note),
+      }),
+    onSuccess: () => {
+      reset()
+      navigate("/notes")
+    },
+  })
+
   const handleFormSubmit: SubmitHandler<
     CreateNoteFormValues
   > = (data) => {
-    const note = {
+    createNote({
       author_id: user!.id,
       title: data.title.trim(),
       description: data.description.trim(),
@@ -40,17 +56,6 @@ export default function CreateNotePage() {
         .split(",")
         .map((tag) => tag.trim())
         .filter((tag) => !!tag),
-    } satisfies Omit<Note, "id">
-
-    fetch("http://localhost:3000/notes", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(note),
-    }).then(() => {
-      reset()
-      navigate("/notes")
     })
   }
 
@@ -64,6 +69,10 @@ export default function CreateNotePage() {
           Create new note
         </p>
       </div>
+
+      {error && (
+        <p className="text-red-500">{error.message}</p>
+      )}
 
       <div className="flex flex-col gap-1">
         <input
