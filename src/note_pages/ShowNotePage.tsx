@@ -1,41 +1,32 @@
-import { useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
-import type { Note, NoteDTO } from "../application/types"
+import type { Note } from "../application/types"
 import { mapNoteFromDTO } from "../application/utils"
+import { useQuery } from "@tanstack/react-query"
 
 export default function ShowNotePage() {
   const { id = "" } = useParams()
-  const [note, setNote] = useState<Note | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch(`http://localhost:3000/notes/${id}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Server responded ${res.status}`)
-        } else {
-          return res.json()
-        }
-      })
-      .then((data: NoteDTO) => {
-        setNote(mapNoteFromDTO(data))
-        setError(null)
-      })
-      .catch((err) => {
-        console.error(err)
-        setError(
-          "Note is not find or database is sleep... Try this: 'npm run db'"
-        )
-      })
-  }, [id])
+  const {
+    isLoading,
+    error,
+    data: note,
+  } = useQuery<Note>({
+    queryKey: ["note", id],
+    queryFn: () =>
+      fetch(`http://localhost:3000/notes/${id}`)
+        .then((res) => res.json())
+        .then(mapNoteFromDTO),
+    staleTime: 1000 * 60 * 5,
+  })
 
   if (error) {
-    return <p className="text-red-500">{error}</p>
+    return <p className="text-red-500">{error.message}</p>
   }
 
-  if (!note) {
+  if (isLoading) {
     return <p className="text-gray-500">Loading...</p>
   }
+
+  if (!note) return 
 
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm flex flex-col gap-4">

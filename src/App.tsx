@@ -10,6 +10,12 @@ import Layout from "./auth_pages/Layout"
 import CreateNotePage from "./note_pages/CreateNotePage"
 import ShowNotePage from "./note_pages/ShowNotePage"
 import EditCardPage from "./note_pages/EditCardPage"
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query"
+
+const queryClient = new QueryClient()
 
 const router = createBrowserRouter([
   {
@@ -53,8 +59,10 @@ const router = createBrowserRouter([
 
 export default function App() {
   return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }
