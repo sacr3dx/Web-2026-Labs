@@ -1,6 +1,9 @@
 import { useEffect } from "react"
 import { useNavigate, useParams } from "react-router"
-import type { CreateNoteFormValues } from "../application/types"
+import type {
+  CreateNoteFormValues,
+  Note,
+} from "../application/types"
 import {
   useForm,
   type SubmitHandler,
@@ -9,8 +12,13 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  type InfiniteData,
 } from "@tanstack/react-query"
-import { fetchNote, updateNote } from "../application/api"
+import {
+  fetchNote,
+  updateNote,
+  type NotesPage,
+} from "../application/api"
 
 export default function EditCardPage() {
   const { id = "" } = useParams()
@@ -54,6 +62,57 @@ export default function EditCardPage() {
   const { mutate: saveNote, error: saveError } =
     useMutation({
       mutationFn: updateNote,
+      onMutate: async (updatedNote) => {
+        await queryClient.cancelQueries({
+          queryKey: ["note", id],
+        })
+        await queryClient.cancelQueries({
+          queryKey: ["notes"],
+        })
+
+        const previousNote = queryClient.getQueryData<Note>(
+          ["note", id]
+        )
+        const previousLists = queryClient.getQueriesData<
+          InfiniteData<NotesPage>
+        >({ queryKey: ["notes"] })
+
+        if (previousNote) {
+          queryClient.setQueryData<Note>(["note", id], {
+            ...previousNote,
+            ...updatedNote,
+          })
+        }
+
+        queryClient.setQueriesData<InfiniteData<NotesPage>>(
+          { queryKey: ["notes"] },
+          (old) =>
+            old && {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                notes: page.notes.map((note) =>
+                  note.id === id
+                    ? { ...note, ...updatedNote }
+                    : note
+                ),
+              })),
+            }
+        )
+
+        return { previousNote, previousLists }
+      },
+      onError: (_err, _updatedNote, context) => {
+        if (context?.previousNote) {
+          queryClient.setQueryData(
+            ["note", id],
+            context.previousNote
+          )
+        }
+        context?.previousLists.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data)
+        })
+      },
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: ["note", id],

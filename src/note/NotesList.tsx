@@ -3,10 +3,15 @@ import {
   useInfiniteQuery,
   useMutation,
   useQueryClient,
+  type InfiniteData,
 } from "@tanstack/react-query"
 import NoteCard from "./NoteCard"
 import type { Note } from "../application/types"
-import { deleteNotes, fetchNotes } from "../application/api"
+import {
+  deleteNotes,
+  fetchNotes,
+  type NotesPage,
+} from "../application/api"
 
 interface Props {
   query: string
@@ -49,6 +54,36 @@ export default function NotesList({
   const { mutate: removeNotes, error: deleteError } =
     useMutation({
       mutationFn: deleteNotes,
+      onMutate: async (ids) => {
+        await queryClient.cancelQueries({
+          queryKey: ["notes"],
+        })
+
+        const previous = queryClient.getQueriesData<
+          InfiniteData<NotesPage>
+        >({ queryKey: ["notes"] })
+
+        queryClient.setQueriesData<InfiniteData<NotesPage>>(
+          { queryKey: ["notes"] },
+          (old) =>
+            old && {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                notes: page.notes.filter(
+                  (note) => !ids.includes(note.id)
+                ),
+              })),
+            }
+        )
+
+        return { previous }
+      },
+      onError: (_err, _ids, context) => {
+        context?.previous.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data)
+        })
+      },
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: ["notes"],

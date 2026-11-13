@@ -1,12 +1,19 @@
 import { useNavigate } from "react-router"
-import type { CreateNoteFormValues } from "../application/types"
+import type {
+  CreateNoteFormValues,
+  Note,
+} from "../application/types"
 import { useAuthContext } from "../hooks/useAuthContext"
 import {
   useForm,
   type SubmitHandler,
 } from "react-hook-form"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createNote } from "../application/api"
+import {
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query"
+import { createNote, type NotesPage } from "../application/api"
 
 export default function CreateNotePage() {
   const { user } = useAuthContext()
@@ -29,6 +36,43 @@ export default function CreateNotePage() {
 
   const { mutate: addNote, error } = useMutation({
     mutationFn: createNote,
+    onMutate: async (newNote) => {
+      await queryClient.cancelQueries({
+        queryKey: ["notes"],
+      })
+
+      const previous = queryClient.getQueriesData<
+        InfiniteData<NotesPage>
+      >({ queryKey: ["notes"] })
+
+      const optimisticNote: Note = {
+        ...newNote,
+        id: `optimistic-${Date.now()}`,
+      }
+
+      queryClient.setQueriesData<InfiniteData<NotesPage>>(
+        { queryKey: ["notes"] },
+        (old) =>
+          old && {
+            ...old,
+            pages: old.pages.map((page, index) =>
+              index === 0
+                ? {
+                    ...page,
+                    notes: [optimisticNote, ...page.notes],
+                  }
+                : page
+            ),
+          }
+      )
+
+      return { previous }
+    },
+    onError: (_err, _newNote, context) => {
+      context?.previous.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data)
+      })
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["notes"],
