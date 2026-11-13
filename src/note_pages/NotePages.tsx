@@ -37,9 +37,10 @@ export default function NotesPages() {
     data: notes = [],
   } = useQuery<Note[]>({
     queryKey: ["notes", query],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       fetch(
-        `http://localhost:3000/notes${query ? `?${query}` : ""}`
+        `http://localhost:3000/notes${query ? `?${query}` : ""}`,
+        { signal }
       )
         .then((res) => {
           if (!res.ok) {

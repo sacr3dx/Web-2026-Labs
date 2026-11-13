@@ -11,8 +11,8 @@ export default function ShowNotePage() {
     data: note,
   } = useQuery<Note>({
     queryKey: ["note", id],
-    queryFn: () =>
-      fetch(`http://localhost:3000/notes/${id}`)
+    queryFn: ({ signal }) =>
+      fetch(`http://localhost:3000/notes/${id}`, { signal })
         .then((res) => res.json())
         .then(mapNoteFromDTO),
     staleTime: 1000 * 60 * 5,
