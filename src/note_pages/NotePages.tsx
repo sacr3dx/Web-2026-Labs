@@ -5,60 +5,55 @@ import type {
   NoteDTO,
   NoteFilters,
 } from "../application/types"
-import { useEffect, useState } from "react"
+import { useMemo, useState } from "react"
 import { mapNoteFromDTO } from "../application/utils"
 import { useAuthContext } from "../hooks/useAuthContext"
 import { Link } from "react-router"
-import { useMutation } from "@tanstack/react-query"
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query"
 
 export default function NotesPages() {
   const { user } = useAuthContext()
+  const queryClient = useQueryClient()
 
-  const [notes, setNotes] = useState<Note[]>([])
-  const [error, setError] = useState<string | null>(null)
-
-  const [allTags, setAllTags] = useState<string[]>([])
   const [tagFilter, setTagFilter] = useState<string[]>([])
 
   const [filters, setFilters] = useState<NoteFilters>({
     authorId: (params) => params.set("author_id", user!.id),
   })
 
-  useEffect(() => {
-    loadNotes()
-  }, [filters])
-
-  const loadNotes = async () => {
+  const query = useMemo(() => {
     const params = new URLSearchParams()
     Object.values(filters).forEach((foo) => foo(params))
-    const query = params.toString()
-      ? `?${params.toString()}`
-      : ""
+    return params.toString()
+  }, [filters])
 
-    fetch(`http://localhost:3000/notes${query}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Server responded ${res.status}`)
-        } else {
+  const {
+    isLoading,
+    error,
+    data: notes = [],
+  } = useQuery<Note[]>({
+    queryKey: ["notes", query],
+    queryFn: () =>
+      fetch(
+        `http://localhost:3000/notes${query ? `?${query}` : ""}`
+      )
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`Server responded ${res.status}`)
+          }
           return res.json()
-        }
-      })
-      .then((data: NoteDTO[]) => {
-        setNotes(data.map(mapNoteFromDTO))
-        setAllTags(
-          Array.from(
-            new Set(data.flatMap((note) => note.tags))
-          )
-        )
-        setError(null)
-      })
-      .catch((err) => {
-        console.error(err)
-        setError(
-          "Database is sleep... Try this: 'npm run db'"
-        )
-      })
-  }
+        })
+        .then((data: NoteDTO[]) => data.map(mapNoteFromDTO)),
+  })
+
+  const allTags = useMemo(
+    () => Array.from(new Set(notes.flatMap((note) => note.tags))),
+    [notes]
+  )
 
   const { mutate: deleteNotes, error: deleteError } =
     useMutation({
@@ -72,23 +67,13 @@ export default function NotesPages() {
         )
         const failed = results.filter((r) => !r.ok)
         if (failed.length > 0) {
-          throw new Error(
-            `Delete error ${failed.length}`
-          )
+          throw new Error(`Delete error ${failed.length}`)
         }
       },
-      onSuccess: (_data, ids) => {
-        const remainingNotes = notes.filter(
-          (n) => !ids.includes(n.id)
-        )
-        setNotes(remainingNotes)
-        setAllTags(
-          Array.from(
-            new Set(
-              remainingNotes.flatMap((note) => note.tags)
-            )
-          )
-        )
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["notes"],
+        })
       },
     })
 
@@ -109,7 +94,9 @@ export default function NotesPages() {
   return (
     <div className="min-h-screen bg-[#fafafa] text-[#1a1a1a] font-sans antialiased p-6">
       <div className="max-w-240 mx-auto">
-        {error && <p className="text-red-500">{error}</p>}
+        {error && (
+          <p className="text-red-500">{error.message}</p>
+        )}
         {deleteError && (
           <p className="text-red-500">
             {deleteError.message}
@@ -130,7 +117,9 @@ export default function NotesPages() {
 
         <div className="flex items-start gap-6">
           <div className="flex-1 min-w-0">
-            {notes.length === 0 ? (
+            {isLoading ? (
+              <p className="text-gray-500">Loading...</p>
+            ) : notes.length === 0 ? (
               <p className="text-gray-500">
                 You have no notes yet
               </p>
