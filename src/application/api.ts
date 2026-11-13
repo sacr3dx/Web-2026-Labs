@@ -1,5 +1,5 @@
 import type { QueryFunctionContext } from "@tanstack/react-query"
-import type { Note, NoteDTO } from "./types"
+import type { Note, NoteDTO, User } from "./types"
 import { mapNoteFromDTO } from "./utils"
 
 const API_URL = import.meta.env.API_URL
@@ -74,4 +74,35 @@ export async function deleteNotes(
   if (failed.length > 0) {
     throw new Error(`Delete error ${failed.length}`)
   }
+}
+
+export async function login({
+  email,
+  password,
+}: Pick<User, "email" | "password">): Promise<User> {
+  const params = new URLSearchParams()
+  params.set("email", email)
+
+  const res = await fetch(
+    `${API_URL}/users?${params.toString()}`
+  )
+  const [user]: User[] = await res.json()
+
+  if (!user || user.password !== password) {
+    throw new Error("Invalid email or password")
+  }
+
+  return user
+}
+
+export function registerUser(
+  user: Omit<User, "id">
+): Promise<User> {
+  return fetch(`${API_URL}/users`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(user),
+  }).then((res) => res.json())
 }
