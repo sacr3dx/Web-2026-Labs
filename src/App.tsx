@@ -3,12 +3,20 @@ import { RouterProvider } from "react-router/dom"
 import HomePage from "./auth_pages/HomePage"
 import LoginPage from "./auth_pages/LoginPage"
 import RegistrationPage from "./auth_pages/RegistrationPage"
+import ErrorPage from "./auth_pages/ErrorPage"
 import NotesPages from "./note_pages/NotePages"
 import { AuthProvider } from "./hooks/useAuthContext"
 import Layout from "./auth_pages/Layout"
 import CreateNotePage from "./note_pages/CreateNotePage"
 import ShowNotePage from "./note_pages/ShowNotePage"
 import EditCardPage from "./note_pages/EditCardPage"
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+
+const queryClient = new QueryClient()
 
 const router = createBrowserRouter([
   {
@@ -44,12 +52,19 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: "*",
+    element: <ErrorPage />,
+  },
 ])
 
 export default function App() {
   return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   )
 }

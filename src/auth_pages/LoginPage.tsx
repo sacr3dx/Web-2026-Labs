@@ -2,6 +2,8 @@ import { Link, useNavigate } from "react-router"
 import type { LoginFormValues } from "../application/types"
 import { useForm } from "react-hook-form"
 import { useAuthContext } from "../hooks/useAuthContext"
+import { useMutation } from "@tanstack/react-query"
+import { login } from "../application/api"
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -15,19 +17,16 @@ export default function LoginPage() {
     mode: "onBlur",
   })
 
+  const { mutate: submitLogin, error } = useMutation({
+    mutationFn: login,
+    onSuccess: (user) => {
+      setUser(user)
+      navigate("/notes")
+    },
+  })
+
   const handleLogin = (data: LoginFormValues) => {
-    const params = new URLSearchParams()
-    params.set("email", data.email)
-    fetch(
-      `http://localhost:3000/users?${params.toString()}`
-    )
-      .then((res) => res.json())
-      .then(([user]) => {
-        if (user && user.password === data.password) {
-          setUser(user)
-          navigate("/notes")
-        }
-      })
+    submitLogin(data)
   }
 
   return (
@@ -38,6 +37,10 @@ export default function LoginPage() {
             Login
           </p>
         </div>
+
+        {error && (
+          <p className="text-red-500">{error.message}</p>
+        )}
 
         <form
           onSubmit={handleSubmit(handleLogin)}

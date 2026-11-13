@@ -1,13 +1,12 @@
 import { Link, useNavigate } from "react-router"
-import type {
-  RegistrationFormValues,
-  User,
-} from "../application/types"
+import type { RegistrationFormValues } from "../application/types"
 import {
   useForm,
   type SubmitHandler,
 } from "react-hook-form"
 import { useAuthContext } from "../hooks/useAuthContext"
+import { useMutation } from "@tanstack/react-query"
+import { registerUser } from "../application/api"
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -21,26 +20,21 @@ export default function RegisterPage() {
     mode: "onBlur",
   })
 
+  const { mutate: submitRegister, error } = useMutation({
+    mutationFn: registerUser,
+    onSuccess: (user) => {
+      setUser(user)
+      navigate("/notes")
+    },
+  })
+
   const handleRegister: SubmitHandler<
     RegistrationFormValues
   > = (data) => {
-    const user = {
+    submitRegister({
       email: data.email.trim(),
       password: data.password_first,
-    } satisfies Omit<User, "id">
-
-    fetch("http://localhost:3000/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(user),
     })
-      .then((res) => res.json())
-      .then((user: User) => {
-        setUser(user)
-        navigate("/notes")
-      })
   }
 
   return (
@@ -51,6 +45,10 @@ export default function RegisterPage() {
             Sign Up
           </p>
         </div>
+
+        {error && (
+          <p className="text-red-500">{error.message}</p>
+        )}
 
         <form
           onSubmit={handleSubmit(handleRegister)}

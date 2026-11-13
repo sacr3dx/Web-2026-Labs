@@ -1,17 +1,24 @@
 import { useNavigate } from "react-router"
 import type {
-  Note,
   CreateNoteFormValues,
+  Note,
 } from "../application/types"
 import { useAuthContext } from "../hooks/useAuthContext"
 import {
   useForm,
   type SubmitHandler,
 } from "react-hook-form"
+import {
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query"
+import { createNote, type NotesPage } from "../application/api"
 
 export default function CreateNotePage() {
   const { user } = useAuthContext()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const {
     register,
     handleSubmit,
@@ -27,10 +34,58 @@ export default function CreateNotePage() {
     },
   })
 
+  const { mutate: addNote, error } = useMutation({
+    mutationFn: createNote,
+    onMutate: async (newNote) => {
+      await queryClient.cancelQueries({
+        queryKey: ["notes"],
+      })
+
+      const previous = queryClient.getQueriesData<
+        InfiniteData<NotesPage>
+      >({ queryKey: ["notes"] })
+
+      const optimisticNote: Note = {
+        ...newNote,
+        id: `optimistic-${Date.now()}`,
+      }
+
+      queryClient.setQueriesData<InfiniteData<NotesPage>>(
+        { queryKey: ["notes"] },
+        (old) =>
+          old && {
+            ...old,
+            pages: old.pages.map((page, index) =>
+              index === 0
+                ? {
+                    ...page,
+                    notes: [optimisticNote, ...page.notes],
+                  }
+                : page
+            ),
+          }
+      )
+
+      return { previous }
+    },
+    onError: (_err, _newNote, context) => {
+      context?.previous.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data)
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["notes"],
+      })
+      reset()
+      navigate("/notes")
+    },
+  })
+
   const handleFormSubmit: SubmitHandler<
     CreateNoteFormValues
   > = (data) => {
-    const note = {
+    addNote({
       author_id: user!.id,
       title: data.title.trim(),
       description: data.description.trim(),
@@ -40,17 +95,6 @@ export default function CreateNotePage() {
         .split(",")
         .map((tag) => tag.trim())
         .filter((tag) => !!tag),
-    } satisfies Omit<Note, "id">
-
-    fetch("http://localhost:3000/notes", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(note),
-    }).then(() => {
-      reset()
-      navigate("/notes")
     })
   }
 
@@ -64,6 +108,10 @@ export default function CreateNotePage() {
           Create new note
         </p>
       </div>
+
+      {error && (
+        <p className="text-red-500">{error.message}</p>
+      )}
 
       <div className="flex flex-col gap-1">
         <input

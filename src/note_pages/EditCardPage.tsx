@@ -1,18 +1,29 @@
 import { useEffect } from "react"
 import { useNavigate, useParams } from "react-router"
 import type {
-  NoteDTO,
   CreateNoteFormValues,
+  Note,
 } from "../application/types"
-import { mapNoteFromDTO } from "../application/utils"
 import {
   useForm,
   type SubmitHandler,
 } from "react-hook-form"
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query"
+import {
+  fetchNote,
+  updateNote,
+  type NotesPage,
+} from "../application/api"
 
 export default function EditCardPage() {
   const { id = "" } = useParams()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const {
     register,
     handleSubmit,
@@ -28,24 +39,96 @@ export default function EditCardPage() {
     },
   })
 
+  const {
+    data: note,
+    isLoading,
+    error: loadError,
+  } = useQuery({
+    queryKey: ["note", id],
+    queryFn: fetchNote,
+    staleTime: 1000 * 60 * 5,
+  })
+
   useEffect(() => {
-    fetch(`http://localhost:3000/notes/${id}`)
-      .then((res) => res.json())
-      .then((data: NoteDTO) => {
-        const note = mapNoteFromDTO(data)
-        reset({
-          title: note.title,
-          description: note.description,
-          hidden: note.hidden,
-          tags: note.tags.join(", "),
+    if (!note) return
+    reset({
+      title: note.title,
+      description: note.description,
+      hidden: note.hidden,
+      tags: note.tags.join(", "),
+    })
+  }, [note, reset])
+
+  const { mutate: saveNote, error: saveError } =
+    useMutation({
+      mutationFn: updateNote,
+      onMutate: async (updatedNote) => {
+        await queryClient.cancelQueries({
+          queryKey: ["note", id],
         })
-      })
-  }, [id, reset])
+        await queryClient.cancelQueries({
+          queryKey: ["notes"],
+        })
+
+        const previousNote = queryClient.getQueryData<Note>(
+          ["note", id]
+        )
+        const previousLists = queryClient.getQueriesData<
+          InfiniteData<NotesPage>
+        >({ queryKey: ["notes"] })
+
+        if (previousNote) {
+          queryClient.setQueryData<Note>(["note", id], {
+            ...previousNote,
+            ...updatedNote,
+          })
+        }
+
+        queryClient.setQueriesData<InfiniteData<NotesPage>>(
+          { queryKey: ["notes"] },
+          (old) =>
+            old && {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                notes: page.notes.map((note) =>
+                  note.id === id
+                    ? { ...note, ...updatedNote }
+                    : note
+                ),
+              })),
+            }
+        )
+
+        return { previousNote, previousLists }
+      },
+      onError: (_err, _updatedNote, context) => {
+        if (context?.previousNote) {
+          queryClient.setQueryData(
+            ["note", id],
+            context.previousNote
+          )
+        }
+        context?.previousLists.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data)
+        })
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["note", id],
+        })
+        queryClient.invalidateQueries({
+          queryKey: ["notes"],
+        })
+        navigate(`/notes/${id}`)
+      },
+    })
 
   const handleFormSubmit: SubmitHandler<
     CreateNoteFormValues
   > = (data) => {
-    const note = {
+    saveNote({
+      id,
       title: data.title.trim(),
       description: data.description.trim(),
       hidden: data.hidden,
@@ -53,17 +136,19 @@ export default function EditCardPage() {
         .split(",")
         .map((tag) => tag.trim())
         .filter((tag) => !!tag),
-    }
-
-    fetch(`http://localhost:3000/notes/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(note),
-    }).then(() => {
-      navigate(`/notes/${id}`)
     })
+  }
+
+  if (loadError) {
+    return (
+      <p className="text-red-500">
+        {loadError.message}
+      </p>
+    )
+  }
+
+  if (isLoading) {
+    return <p className="text-gray-500">Loading...</p>
   }
 
   return (
@@ -76,6 +161,10 @@ export default function EditCardPage() {
           Edit note
         </p>
       </div>
+
+      {saveError && (
+        <p className="text-red-500">{saveError.message}</p>
+      )}
 
       <div className="flex flex-col gap-1">
         <input
