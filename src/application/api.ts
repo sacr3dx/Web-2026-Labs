@@ -3,24 +3,43 @@ import type { Note, NoteDTO, User } from "./types"
 import { mapNoteFromDTO } from "./utils"
 
 const API_URL = import.meta.env.API_URL
+const NOTES_PER_PAGE = 6
+
+export interface NotesPage {
+  notes: Note[]
+  nextPage: number | null
+}
+
+interface NotesPageDTO {
+  data: NoteDTO[]
+  next: number | null
+}
 
 export function fetchNotes({
   queryKey: [, query],
+  pageParam,
   signal,
-}: QueryFunctionContext<readonly ["notes", string]>): Promise<
-  Note[]
-> {
-  return fetch(
-    `${API_URL}/notes${query ? `?${query}` : ""}`,
-    { signal }
-  )
+}: QueryFunctionContext<
+  readonly ["notes", string],
+  number
+>): Promise<NotesPage> {
+  const params = new URLSearchParams(query)
+  params.set("_page", String(pageParam))
+  params.set("_per_page", String(NOTES_PER_PAGE))
+
+  return fetch(`${API_URL}/notes?${params.toString()}`, {
+    signal,
+  })
     .then((res) => {
       if (!res.ok) {
         throw new Error(`Server responded ${res.status}`)
       }
       return res.json()
     })
-    .then((data: NoteDTO[]) => data.map(mapNoteFromDTO))
+    .then((page: NotesPageDTO) => ({
+      notes: page.data.map(mapNoteFromDTO),
+      nextPage: page.next,
+    }))
 }
 
 export function fetchNote({

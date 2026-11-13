@@ -1,21 +1,15 @@
 import NoteFilterForm from "../forms/NoteFilterForm"
-import NoteCard from "../note/NoteCard"
-import type { Note, NoteFilters } from "../application/types"
+import NotesList from "../note/NotesList"
+import type { NoteFilters } from "../application/types"
 import { useMemo, useState } from "react"
 import { useAuthContext } from "../hooks/useAuthContext"
 import { Link } from "react-router"
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query"
-import { fetchNotes, deleteNotes } from "../application/api"
 
 export default function NotesPages() {
   const { user } = useAuthContext()
-  const queryClient = useQueryClient()
 
   const [tagFilter, setTagFilter] = useState<string[]>([])
+  const [allTags, setAllTags] = useState<string[]>([])
 
   const [filters, setFilters] = useState<NoteFilters>({
     authorId: (params) => params.set("author_id", user!.id),
@@ -27,37 +21,6 @@ export default function NotesPages() {
     return params.toString()
   }, [filters])
 
-  const {
-    isLoading,
-    error,
-    data: notes = [],
-  } = useQuery({
-    queryKey: ["notes", query],
-    queryFn: fetchNotes,
-  })
-
-  const allTags = useMemo(
-    () => Array.from(new Set(notes.flatMap((note) => note.tags))),
-    [notes]
-  )
-
-  const { mutate: removeNotes, error: deleteError } =
-    useMutation({
-      mutationFn: deleteNotes,
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["notes"],
-        })
-      },
-    })
-
-  const filterNotes = (notes: Note[]): Note[] =>
-    tagFilter.length
-      ? notes.filter((note) =>
-          note.tags.some((tag) => tagFilter.includes(tag))
-        )
-      : notes
-
   const handleFilterChange = (
     filter: string,
     foo: (params: URLSearchParams) => void
@@ -68,15 +31,6 @@ export default function NotesPages() {
   return (
     <div className="min-h-screen bg-[#fafafa] text-[#1a1a1a] font-sans antialiased p-6">
       <div className="max-w-240 mx-auto">
-        {error && (
-          <p className="text-red-500">{error.message}</p>
-        )}
-        {deleteError && (
-          <p className="text-red-500">
-            {deleteError.message}
-          </p>
-        )}
-
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-semibold m-0">
             Your notes:
@@ -91,27 +45,11 @@ export default function NotesPages() {
 
         <div className="flex items-start gap-6">
           <div className="flex-1 min-w-0">
-            {isLoading ? (
-              <p className="text-gray-500">Loading...</p>
-            ) : notes.length === 0 ? (
-              <p className="text-gray-500">
-                You have no notes yet
-              </p>
-            ) : filterNotes(notes).length === 0 ? (
-              <p className="text-gray-500">
-                No notes match the selected filters
-              </p>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {filterNotes(notes).map((note) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    onDelete={() => removeNotes([note.id])}
-                  />
-                ))}
-              </div>
-            )}
+            <NotesList
+              query={query}
+              tagFilter={tagFilter}
+              onAvailableTagsChange={setAllTags}
+            />
           </div>
 
           <div className="w-70 shrink-0 sticky top-6">
