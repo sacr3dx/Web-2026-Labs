@@ -1,14 +1,12 @@
 import { useNavigate } from "react-router"
-import type {
-  Note,
-  CreateNoteFormValues,
-} from "../application/types"
+import type { CreateNoteFormValues } from "../application/types"
 import { useAuthContext } from "../hooks/useAuthContext"
 import {
   useForm,
   type SubmitHandler,
 } from "react-hook-form"
 import { useMutation } from "@tanstack/react-query"
+import { createNote } from "../application/api"
 
 export default function CreateNotePage() {
   const { user } = useAuthContext()
@@ -28,15 +26,8 @@ export default function CreateNotePage() {
     },
   })
 
-  const { mutate: createNote, error } = useMutation({
-    mutationFn: (note: Omit<Note, "id">) =>
-      fetch("http://localhost:3000/notes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(note),
-      }),
+  const { mutate: addNote, error } = useMutation({
+    mutationFn: createNote,
     onSuccess: () => {
       reset()
       navigate("/notes")
@@ -46,7 +37,7 @@ export default function CreateNotePage() {
   const handleFormSubmit: SubmitHandler<
     CreateNoteFormValues
   > = (data) => {
-    createNote({
+    addNote({
       author_id: user!.id,
       title: data.title.trim(),
       description: data.description.trim(),

@@ -1,12 +1,7 @@
 import NoteFilterForm from "../forms/NoteFilterForm"
 import NoteCard from "../note/NoteCard"
-import type {
-  Note,
-  NoteDTO,
-  NoteFilters,
-} from "../application/types"
+import type { Note, NoteFilters } from "../application/types"
 import { useMemo, useState } from "react"
-import { mapNoteFromDTO } from "../application/utils"
 import { useAuthContext } from "../hooks/useAuthContext"
 import { Link } from "react-router"
 import {
@@ -14,6 +9,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query"
+import { fetchNotes, deleteNotes } from "../application/api"
 
 export default function NotesPages() {
   const { user } = useAuthContext()
@@ -35,20 +31,9 @@ export default function NotesPages() {
     isLoading,
     error,
     data: notes = [],
-  } = useQuery<Note[]>({
+  } = useQuery({
     queryKey: ["notes", query],
-    queryFn: ({ signal }) =>
-      fetch(
-        `http://localhost:3000/notes${query ? `?${query}` : ""}`,
-        { signal }
-      )
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error(`Server responded ${res.status}`)
-          }
-          return res.json()
-        })
-        .then((data: NoteDTO[]) => data.map(mapNoteFromDTO)),
+    queryFn: fetchNotes,
   })
 
   const allTags = useMemo(
@@ -56,21 +41,9 @@ export default function NotesPages() {
     [notes]
   )
 
-  const { mutate: deleteNotes, error: deleteError } =
+  const { mutate: removeNotes, error: deleteError } =
     useMutation({
-      mutationFn: async (ids: string[]) => {
-        const results = await Promise.all(
-          ids.map((id) =>
-            fetch(`http://localhost:3000/notes/${id}`, {
-              method: "DELETE",
-            })
-          )
-        )
-        const failed = results.filter((r) => !r.ok)
-        if (failed.length > 0) {
-          throw new Error(`Delete error ${failed.length}`)
-        }
-      },
+      mutationFn: deleteNotes,
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: ["notes"],
@@ -134,7 +107,7 @@ export default function NotesPages() {
                   <NoteCard
                     key={note.id}
                     note={note}
-                    onDelete={() => deleteNotes([note.id])}
+                    onDelete={() => removeNotes([note.id])}
                   />
                 ))}
               </div>

@@ -1,7 +1,6 @@
 import { Link, useParams } from "react-router"
-import type { Note } from "../application/types"
-import { mapNoteFromDTO } from "../application/utils"
 import { useQuery } from "@tanstack/react-query"
+import { fetchNote } from "../application/api"
 
 export default function ShowNotePage() {
   const { id = "" } = useParams()
@@ -9,12 +8,9 @@ export default function ShowNotePage() {
     isLoading,
     error,
     data: note,
-  } = useQuery<Note>({
+  } = useQuery({
     queryKey: ["note", id],
-    queryFn: ({ signal }) =>
-      fetch(`http://localhost:3000/notes/${id}`, { signal })
-        .then((res) => res.json())
-        .then(mapNoteFromDTO),
+    queryFn: fetchNote,
     staleTime: 1000 * 60 * 5,
   })
 

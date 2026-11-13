@@ -1,20 +1,12 @@
 import { useEffect } from "react"
 import { useNavigate, useParams } from "react-router"
-import type {
-  Note,
-  CreateNoteFormValues,
-} from "../application/types"
-import { mapNoteFromDTO } from "../application/utils"
+import type { CreateNoteFormValues } from "../application/types"
 import {
   useForm,
   type SubmitHandler,
 } from "react-hook-form"
 import { useMutation, useQuery } from "@tanstack/react-query"
-
-type EditNotePayload = Pick<
-  Note,
-  "title" | "description" | "hidden" | "tags"
->
+import { fetchNote, updateNote } from "../application/api"
 
 export default function EditCardPage() {
   const { id = "" } = useParams()
@@ -38,12 +30,9 @@ export default function EditCardPage() {
     data: note,
     isLoading,
     error: loadError,
-  } = useQuery<Note>({
+  } = useQuery({
     queryKey: ["note", id],
-    queryFn: ({ signal }) =>
-      fetch(`http://localhost:3000/notes/${id}`, { signal })
-        .then((res) => res.json())
-        .then(mapNoteFromDTO),
+    queryFn: fetchNote,
     staleTime: 1000 * 60 * 5,
   })
 
@@ -59,14 +48,7 @@ export default function EditCardPage() {
 
   const { mutate: saveNote, error: saveError } =
     useMutation({
-      mutationFn: (note: EditNotePayload) =>
-        fetch(`http://localhost:3000/notes/${id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(note),
-        }),
+      mutationFn: updateNote,
       onSuccess: () => {
         navigate(`/notes/${id}`)
       },
@@ -76,6 +58,7 @@ export default function EditCardPage() {
     CreateNoteFormValues
   > = (data) => {
     saveNote({
+      id,
       title: data.title.trim(),
       description: data.description.trim(),
       hidden: data.hidden,
