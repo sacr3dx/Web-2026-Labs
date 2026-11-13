@@ -5,12 +5,13 @@ import {
   useForm,
   type SubmitHandler,
 } from "react-hook-form"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createNote } from "../application/api"
 
 export default function CreateNotePage() {
   const { user } = useAuthContext()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const {
     register,
     handleSubmit,
@@ -29,6 +30,9 @@ export default function CreateNotePage() {
   const { mutate: addNote, error } = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["notes"],
+      })
       reset()
       navigate("/notes")
     },

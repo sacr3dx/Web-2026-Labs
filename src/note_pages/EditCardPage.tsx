@@ -5,12 +5,17 @@ import {
   useForm,
   type SubmitHandler,
 } from "react-hook-form"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { fetchNote, updateNote } from "../application/api"
 
 export default function EditCardPage() {
   const { id = "" } = useParams()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const {
     register,
     handleSubmit,
@@ -50,6 +55,12 @@ export default function EditCardPage() {
     useMutation({
       mutationFn: updateNote,
       onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["note", id],
+        })
+        queryClient.invalidateQueries({
+          queryKey: ["notes"],
+        })
         navigate(`/notes/${id}`)
       },
     })
